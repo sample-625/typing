@@ -1,167 +1,29 @@
-import time
+from flask import Flask, render_template
 import random
-import tkinter as tk
-from tkinter import messagebox
-# Список слов, которые можно использовать для теста
+
+app = Flask(__name__)
+
+# Список слов для теста
 word_list = [
-    "the", "be", "and", "of", "a", "in", "to", "have", "it", "I", "that", "for", "you", "he", "with", "on", "do", "say", "this", "they", "at", "but", "we", "his", "from", "that", "not", "by", "she", "or", "as", "what", "go", "their", "can", "who", "get", "if", "would", "her", "all", "my", "make", "about", "know", "will", "as", "up", "one", "time", "there", "year", "so", "think", "when", "which", "them", "some", "me", "people", "take", "out", "into", "just", "see", "him", "your", "come", "could", "now", "than", "like", "other", "how", "then", "its", "our", "two", "more", "these", "want", "way", "look", "first", "also", "new", "because", "day", "more", "use", "no", "man", "find", "here", "thing", "give", "many", "well"
+    "the", "be", "and", "of", "a", "in", "to", "have", "it", "I",
+    "that", "for", "you", "he", "with", "on", "do", "say", "this", "they",
+    "at", "but", "we", "his", "from", "not", "by", "she", "or", "as", "what",
+    "go", "their", "can", "who", "get", "if", "would", "her", "all", "my",
+    "make", "about", "know", "will", "up", "one", "time", "there", "year",
+    "so", "think", "when", "which", "them", "some", "me", "people", "take",
+    "out", "into", "just", "see", "him", "your", "come", "could", "now", "than",
+    "like", "other", "how", "then", "its", "our", "two", "more", "these", "want",
+    "way", "look", "first", "also", "new", "because", "day", "more", "use",
+    "no", "man", "find", "here", "thing", "give", "many", "well"
 ]
 
 def get_random_text(num_words=30):
     return ' '.join(random.choice(word_list) for _ in range(num_words))
 
-class TypingTestApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Тест на скорость печати")
-        self.root.geometry("700x500")
-        
-        # Тема по умолчанию (тёмная)
-        self.dark_mode = True
-        self.colors = self.get_colors()
-        
-        # Настройка шрифтов
-        self.title_font = ("Helvetica", 18, "bold")
-        self.text_font = ("Courier", 14)
-        self.timer_font = ("Helvetica", 14, "bold")
-        
-        self.test_text = get_random_text()
-        self.start_time = None
-        self.timer_running = False
-        self.user_input = ""
-        
-        self.setup_ui()
-        self.apply_text_colors()
-        self.apply_theme()
-    
-    def get_colors(self):
-        if self.dark_mode:
-            return {
-                "bg": "#1E1E1E",
-                "text": "#FFFFFF",
-                "entry_bg": "#2D2D2D",
-                "entry_fg": "#FFFFFF",
-                "accent": "#BB86FC",
-                "correct": "#00FF00",
-                "incorrect": "#FF0000"
-            }
-        else:
-            return {
-                "bg": "#FFFFFF",
-                "text": "#000000",
-                "entry_bg": "#F1F1F1",
-                "entry_fg": "#000000",
-                "accent": "#6200EE",
-                "correct": "#00FF00",
-                "incorrect": "#FF0000"
-            }
-    
-    def setup_ui(self):
-        # Заголовок
-        self.title_label = tk.Label(self.root, text="Тест на скорость печати", font=self.title_font)
-        self.title_label.pack(pady=20)
-        
-        # Текст для печати
-        self.text_display = tk.Text(self.root, font=self.text_font, wrap="word", height=5)
-        self.text_display.insert("1.0", self.test_text)
-        self.text_display.config(state="disabled")  # Запрещаем редактирование
-        self.text_display.pack(pady=10, fill="x", padx=20)
-        
-        # Поле для ввода
-        self.input_entry = tk.Entry(self.root, font=self.text_font, width=60)
-        self.input_entry.pack(pady=20, padx=20)
-        self.input_entry.bind('<KeyPress>', self.start_timer)  # Таймер начинается с первого нажатия
-        self.input_entry.bind('<KeyRelease>', self.check_typing)
-        
-        # Таймер
-        self.timer_label = tk.Label(self.root, text="Время: 0.00 сек", font=self.timer_font)
-        self.timer_label.pack(pady=10)
-        
-        # Кнопка "Рестарт"
-        self.restart_button = tk.Button(self.root, text="Рестарт", command=self.restart_test, font=self.text_font, bd=0, padx=20, pady=10)
-        self.restart_button.pack(pady=10)
-        
-        # Кнопка "Сменить тему"
-        self.theme_button = tk.Button(self.root, text="Светлая тема", command=self.toggle_theme, font=self.text_font, bd=0, padx=20, pady=10)
-        self.theme_button.pack(pady=10)
-    
-    def start_timer(self, event):
-        if not self.timer_running:
-            self.start_time = time.time()
-            self.timer_running = True
-            self.update_timer()
-    
-    def update_timer(self):
-        if self.timer_running:
-            elapsed_time = time.time() - self.start_time
-            self.timer_label.config(text=f"Время: {elapsed_time:.2f} сек")
-            self.root.after(100, self.update_timer)
-    
-    def check_typing(self, event):
-        self.user_input = self.input_entry.get()
-        
-        # Подсветка символов
-        self.text_display.config(state="normal")
-        self.text_display.delete("1.0", "end")
-        for i, (correct_char, user_char) in enumerate(zip(self.test_text, self.user_input)):
-            if user_char == correct_char:
-                self.text_display.insert("end", user_char, "correct")
-            else:
-                self.text_display.insert("end", correct_char, "incorrect")
-        self.text_display.insert("end", self.test_text[len(self.user_input):])  # Оставшийся текст
-        self.text_display.config(state="disabled")
-        
-        # Завершение теста, если введён последний символ и нажат пробел
-        if len(self.user_input) >= len(self.test_text) and event.keysym == "space":
-            self.finish_test()
-    
-    def finish_test(self):
-        self.timer_running = False
-        elapsed_time = time.time() - self.start_time
-        words_per_minute = (len(self.user_input.split()) / elapsed_time) * 60
-        accuracy = sum(1 for a, b in zip(self.test_text, self.user_input) if a == b) / len(self.test_text) * 100
-        
-        messagebox.showinfo("Результат", 
-                            f"Тест завершен!\nВремя: {elapsed_time:.2f} сек\nСкорость: {words_per_minute:.2f} слов в минуту\nТочность: {accuracy:.2f}%")
-        self.input_entry.config(state='disabled')
-    
-    def restart_test(self):
-        # Сброс таймера
-        self.timer_running = False
-        self.timer_label.config(text="Время: 0.00 сек")
-        
-        # Генерация нового текста
-        self.test_text = get_random_text()
-        self.text_display.config(state="normal")
-        self.text_display.delete("1.0", "end")
-        self.text_display.insert("1.0", self.test_text)
-        self.text_display.config(state="disabled")
-        
-        # Очистка поля ввода
-        self.input_entry.delete(0, tk.END)
-        self.input_entry.config(state='normal')
-        
-        # Сброс пользовательского ввода
-        self.user_input = ""
-    
-    def toggle_theme(self):
-        self.dark_mode = not self.dark_mode
-        self.colors = self.get_colors()
-        self.apply_theme()
-        self.theme_button.config(text="Тёмная тема" if not self.dark_mode else "Светлая тема")
-    
-    def apply_theme(self):
-        # Применение цветов ко всем элементам
-        self.root.configure(bg=self.colors["bg"])
-        self.title_label.config(bg=self.colors["bg"], fg=self.colors["text"])
-        self.text_display.config(bg=self.colors["entry_bg"], fg=self.colors["text"])
-        self.input_entry.config(bg=self.colors["entry_bg"], fg=self.colors["entry_fg"])
-        self.timer_label.config(bg=self.colors["bg"], fg=self.colors["text"])
-        self.restart_button.config(bg=self.colors["accent"], fg="#FFFFFF")
-        self.theme_button.config(bg=self.colors["accent"], fg="#FFFFFF")
-    
-    def apply_text_colors(self):
-        # Настройка цветов для подсветки
-        self.text_display.tag_configure("correct", foreground=self.colors["correct"])
-        self.text_display.tag_configure("incorrect", foreground=self.colors["incorrect"])
-    root.mainloop()
+@app.route('/')
+def home():
+    text = get_random_text()
+    return render_template("index.html", text=text)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)

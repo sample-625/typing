@@ -164,8 +164,4 @@ class TypingTestApp:
         # Настройка цветов для подсветки
         self.text_display.tag_configure("correct", foreground=self.colors["correct"])
         self.text_display.tag_configure("incorrect", foreground=self.colors["incorrect"])
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = TypingTestApp(root)
     root.mainloop()
